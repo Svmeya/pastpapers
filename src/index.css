@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Outfit:wght@100..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Outfit", sans-serif;
+  
+  /* Modern Academic Palette - Updated to Natural Tones */
+  --color-primary: #933B5B; /* Amaranth */
+  --color-primary-dark: #722d46;
+  --color-primary-light: #fdf2f5;
+  
+  /* Accents */
+  --color-secondary: #B5728A; /* Thulian Pink */
+  --color-accent-green: #AABAAE; /* Brook Green */
+  --color-accent-olive: #9F9679; /* Pomelo Olive */
+  
+  /* Backgrounds */
+  --color-bg-light: #E3D6BF; /* Chalk */
+  --color-bg-dark: #12100e; /* Dark variations of Pomelo/Amaranth */
+}
+
+@layer base {
+  body {
+    @apply font-sans text-stone-900 bg-bg-light transition-colors duration-300;
+  }
+}
+
+.dark body {
+  @apply bg-bg-dark text-slate-200;
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(0, 0, 0, 0.05) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.dark .shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(255, 255, 255, 0.05) 50%, transparent 75%);
+  background-size: 200% 100%;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

@@ -1,0 +1,64 @@
+{
+  "entities": {
+    "Admin": {
+      "title": "Admin",
+      "description": "System administrator with upload privileges.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The Firebase Auth UID." },
+        "email": { "type": "string", "description": "Admin email address." },
+        "displayName": { "type": "string", "description": "Admin display name." },
+        "role": { "type": "string", "enum": ["admin", "super-admin"], "description": "The administrative role." }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Registered user profile.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "lastSeen": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "lastSeen"]
+    },
+    "Paper": {
+      "title": "Paper",
+      "description": "An examination paper or topical exercise.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Title of the paper." },
+        "content": { "type": "string", "description": "The markdown or text content summary of the paper." },
+        "fileUrl": { "type": "string", "description": "URL to the uploaded PDF/DOCX file." },
+        "fileType": { "type": "string", "description": "MIME type of the file." },
+        "schoolId": { "type": "string", "description": "ID of the associated school." },
+        "grade": { "type": "string", "description": "Grade level (e.g., '12')." },
+        "subject": { "type": "string", "description": "Subject name." },
+        "category": { "type": "string", "enum": ["Periodically", "Topically"], "description": "Type of paper." },
+        "unitNumber": { "type": "string", "description": "Optional unit number for topical papers." },
+        "description": { "type": "string", "description": "Short description of the unit or paper." },
+        "year": { "type": "string", "description": "Year of the paper (optional)." },
+        "uploadedBy": { "type": "string", "description": "UID of the admin who uploaded it." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation." }
+      },
+      "required": ["title", "schoolId", "grade", "subject", "category", "uploadedBy", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "List of authorized admins."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Public user profiles."
+    },
+    "/papers/{paperId}": {
+      "schema": "Paper",
+      "description": "Collection of examination papers."
+    }
+  }
+}
