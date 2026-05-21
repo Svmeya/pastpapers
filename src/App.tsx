@@ -36,7 +36,6 @@ import {
   Download,
   FileUp
 } from "lucide-react";
-import { GoogleGenAI } from "@google/genai";
 import { MOCK_SCHOOLS } from "./data";
 import { School, GradeData, SubjectData, Category, PastPaper } from "./types";
 import { 
@@ -66,17 +65,6 @@ import {
 } from "./firebase";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 
-// Initialize Gemini safely
-const ai = (() => {
-  try {
-    const key = (import.meta as any).env?.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-    if (!key || key === "undefined") return null;
-    return new GoogleGenAI({ apiKey: key });
-  } catch (e) {
-    console.warn("Gemini AI initialization failed:", e);
-    return null;
-  }
-})();
 
 type NavigationState = {
   school?: School;
@@ -514,7 +502,7 @@ function App() {
   };
 
   const sendMessage = async () => {
-    if (!inputValue.trim() || !nav.paper || !ai) return;
+    if (!inputValue.trim() || !nav.paper) return;
 
     const userMessage = inputValue.trim();
     setInputValue("");
@@ -522,18 +510,35 @@ function App() {
     setIsTyping(true);
 
     try {
-      const chat = ai.chats.create({
-        model: "gemini-3-flash-preview",
-        config: {
-          systemInstruction: `You are an expert tutor helping a student study a past paper for ${nav.subject?.name} (Grade ${nav.grade?.grade}). 
-          The paper content is: "${nav.paper.content}". 
-          Answer questions about the paper, explain difficult concepts, and provide guidance based ONLY on the provided content when possible. 
-          If the student asks something outside the paper, try to relate it back to the subject matter. Keep responses educational and encouraging.`,
-        }
+      // Map current list of chatMessages to Gemini history format
+      const history = chatMessages.map(msg => ({
+        role: msg.role === "user" ? "user" : "model",
+        parts: [{ text: msg.text }]
+      }));
+
+      const systemInstruction = `You are an expert tutor helping a student study a past paper for ${nav.subject?.name} (Grade ${nav.grade?.grade}). 
+      The paper content is: "${nav.paper.content}". 
+      Answer questions about the paper, explain difficult concepts, and provide guidance based ONLY on the provided content when possible. 
+      If the student asks something outside the paper, try to relate it back to the subject matter. Keep responses educational and encouraging.`;
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          history,
+          message: userMessage,
+          systemInstruction
+        })
       });
 
-      const result = await chat.sendMessage({ message: userMessage });
-      const modelResponse = result.text;
+      if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const modelResponse = data.text;
       
       setChatMessages(prev => [...prev, { role: "model", text: modelResponse || "I'm sorry, I couldn't process that request." }]);
     } catch (error) {
